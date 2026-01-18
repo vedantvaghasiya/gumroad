@@ -4,6 +4,7 @@ import React from "react";
 import { EmailTab } from "$app/data/installments";
 
 import { Icon } from "$app/components/Icons";
+import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Popover } from "$app/components/Popover";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
@@ -16,63 +17,79 @@ type LayoutProps = {
   query?: string;
   onQueryChange?: (query: string) => void;
   hideNewButton?: boolean;
+  actions?: React.ReactNode;
 };
 
-export const EmailsLayout = ({ selectedTab, children, hasPosts, query, onQueryChange, hideNewButton }: LayoutProps) => {
+export const EmailsLayout = ({
+  selectedTab,
+  children,
+  hasPosts,
+  query,
+  onQueryChange,
+  hideNewButton,
+  actions,
+}: LayoutProps) => {
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = React.useState(false);
+  const loggedInUser = useLoggedInUser();
 
   React.useEffect(() => {
     if (isSearchPopoverOpen) searchInputRef.current?.focus();
   }, [isSearchPopoverOpen]);
 
+  const title = selectedTab === "subscribers" ? "Subscribers" : "Emails";
+  const canCreateEmails = loggedInUser?.policies.installment.create;
+
+  const defaultActions = (
+    <>
+      {hasPosts && onQueryChange ? (
+        <Popover
+          open={isSearchPopoverOpen}
+          onToggle={setIsSearchPopoverOpen}
+          aria-label="Toggle Search"
+          trigger={
+            <WithTooltip tip="Search" position="bottom">
+              <div className="button">
+                <Icon name="solid-search" />
+              </div>
+            </WithTooltip>
+          }
+        >
+          <div className="input">
+            <Icon name="solid-search" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search emails"
+              value={query ?? ""}
+              onChange={(evt) => onQueryChange(evt.target.value)}
+            />
+          </div>
+        </Popover>
+      ) : null}
+      {!hideNewButton && <NewEmailButton />}
+    </>
+  );
+
   return (
     <div>
-      <PageHeader
-        title="Emails"
-        actions={
-          <>
-            {hasPosts && onQueryChange ? (
-              <Popover
-                open={isSearchPopoverOpen}
-                onToggle={setIsSearchPopoverOpen}
-                aria-label="Toggle Search"
-                trigger={
-                  <WithTooltip tip="Search" position="bottom">
-                    <div className="button">
-                      <Icon name="solid-search" />
-                    </div>
-                  </WithTooltip>
-                }
-              >
-                <div className="input">
-                  <Icon name="solid-search" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search emails"
-                    value={query ?? ""}
-                    onChange={(evt) => onQueryChange(evt.target.value)}
-                  />
-                </div>
-              </Popover>
-            ) : null}
-            {!hideNewButton && <NewEmailButton />}
-          </>
-        }
-      >
+      <PageHeader title={title} actions={actions ?? defaultActions}>
         <Tabs>
           <Tab asChild isSelected={selectedTab === "published"}>
             <Link href={Routes.published_emails_path()}>Published</Link>
           </Tab>
-          <Tab asChild isSelected={selectedTab === "scheduled"}>
-            <Link href={Routes.scheduled_emails_path()}>Scheduled</Link>
-          </Tab>
-          <Tab asChild isSelected={selectedTab === "drafts"}>
-            <Link href={Routes.drafts_emails_path()}>Drafts</Link>
-          </Tab>
-          <Tab href={Routes.followers_path()} isSelected={false}>
-            Subscribers
+          {canCreateEmails ? (
+            <>
+              <Tab asChild isSelected={selectedTab === "scheduled"}>
+                <Link href={Routes.scheduled_emails_path()}>Scheduled</Link>
+              </Tab>
+              <Tab asChild isSelected={selectedTab === "drafts"}>
+                <Link href={Routes.drafts_emails_path()}>Drafts</Link>
+              </Tab>
+            </>
+          ) : null}
+          <Tab asChild isSelected={selectedTab === "subscribers"}>
+            <Link href={Routes.followers_path()}>Subscribers</Link>
           </Tab>
         </Tabs>
       </PageHeader>
