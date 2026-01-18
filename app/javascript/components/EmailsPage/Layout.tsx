@@ -3,6 +3,7 @@ import React from "react";
 
 import { EmailTab } from "$app/data/installments";
 
+import { Button, buttonVariants } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
 import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Popover } from "$app/components/Popover";
@@ -49,7 +50,7 @@ export const EmailsLayout = ({
           aria-label="Toggle Search"
           trigger={
             <WithTooltip tip="Search" position="bottom">
-              <div className="button">
+              <div className={buttonVariants({ size: "default" })}>
                 <Icon name="solid-search" />
               </div>
             </WithTooltip>
@@ -102,13 +103,13 @@ export const NewEmailButton = ({ copyFrom }: { copyFrom?: string } = {}) => {
   const href = copyFrom ? Routes.new_email_path({ copy_from: copyFrom }) : Routes.new_email_path();
 
   return (
-    <Link className={copyFrom ? "button" : "button accent"} href={href}>
-      {copyFrom ? "Duplicate" : "New email"}
-    </Link>
+    <Button asChild color={copyFrom ? undefined : "accent"}>
+      <Link href={href}>{copyFrom ? "Duplicate" : "New email"}</Link>
+    </Button>
   );
 };
 export const EditEmailButton = ({ id }: { id: string }) => (
-  <Link className="button" href={Routes.edit_email_path(id)}>
-    Edit
-  </Link>
+  <Button asChild>
+    <Link href={Routes.edit_email_path(id)}>Edit</Link>
+  </Button>
 );

@@ -2,7 +2,7 @@ import { router, useForm, usePage } from "@inertiajs/react";
 import * as React from "react";
 import { cast } from "ts-safe-cast";
 
-import { Button } from "$app/components/Button";
+import { Button, buttonVariants } from "$app/components/Button";
 import { CopyToClipboard } from "$app/components/CopyToClipboard";
 import { useCurrentSeller } from "$app/components/CurrentSeller";
 import { EmailsLayout } from "$app/components/EmailsPage/Layout";
@@ -100,7 +100,7 @@ export default function FollowersPage() {
               aria-label="Search"
               trigger={
                 <WithTooltip tip="Search" position="bottom">
-                  <div className="button">
+                  <div className={buttonVariants({ size: "default" })}>
                     <Icon name="solid-search" />
                   </div>
                 </WithTooltip>
