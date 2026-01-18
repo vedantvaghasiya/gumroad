@@ -5,7 +5,6 @@ import { EmailTab } from "$app/data/installments";
 
 import { Button, buttonVariants } from "$app/components/Button";
 import { Icon } from "$app/components/Icons";
-import { useLoggedInUser } from "$app/components/LoggedInUser";
 import { Popover } from "$app/components/Popover";
 import { PageHeader } from "$app/components/ui/PageHeader";
 import { Tab, Tabs } from "$app/components/ui/Tabs";
@@ -32,14 +31,12 @@ export const EmailsLayout = ({
 }: LayoutProps) => {
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = React.useState(false);
-  const loggedInUser = useLoggedInUser();
 
   React.useEffect(() => {
     if (isSearchPopoverOpen) searchInputRef.current?.focus();
   }, [isSearchPopoverOpen]);
 
   const title = selectedTab === "subscribers" ? "Subscribers" : "Emails";
-  const canCreateEmails = loggedInUser?.policies.installment.create;
 
   const defaultActions = (
     <>
@@ -79,16 +76,12 @@ export const EmailsLayout = ({
           <Tab asChild isSelected={selectedTab === "published"}>
             <Link href={Routes.published_emails_path()}>Published</Link>
           </Tab>
-          {canCreateEmails ? (
-            <>
-              <Tab asChild isSelected={selectedTab === "scheduled"}>
-                <Link href={Routes.scheduled_emails_path()}>Scheduled</Link>
-              </Tab>
-              <Tab asChild isSelected={selectedTab === "drafts"}>
-                <Link href={Routes.drafts_emails_path()}>Drafts</Link>
-              </Tab>
-            </>
-          ) : null}
+          <Tab asChild isSelected={selectedTab === "scheduled"}>
+            <Link href={Routes.scheduled_emails_path()}>Scheduled</Link>
+          </Tab>
+          <Tab asChild isSelected={selectedTab === "drafts"}>
+            <Link href={Routes.drafts_emails_path()}>Drafts</Link>
+          </Tab>
           <Tab asChild isSelected={selectedTab === "subscribers"}>
             <Link href={Routes.followers_path()}>Subscribers</Link>
           </Tab>
