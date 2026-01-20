@@ -91,7 +91,7 @@ describe GenerateSalesReportJob do
       expect(SlackMessageWorker).to have_enqueued_sidekiq_job("payments", "GST Reporting", anything, "green")
     end
 
-    it "includes Customer Tax ID column in CSV" do
+    it "includes Customer Tax ID column in CSV", vcr: { cassette_name: "GenerateSalesReportJob/happy_case/creates_a_CSV_file_for_sales_into_the_United_Kingdom" } do
       @purchase1.create_purchase_sales_tax_info!(business_vat_id: "GB123456789")
 
       csv_content = nil
