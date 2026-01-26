@@ -1,12 +1,10 @@
 import { throttle } from "lodash-es";
 import * as React from "react";
-import { createCast } from "ts-safe-cast";
 
 import { createConsumptionEvent } from "$app/data/consumption_analytics";
 import { trackMediaLocationChanged } from "$app/data/media_location";
 import GuidGenerator from "$app/utils/guid_generator";
 import { createJWPlayer } from "$app/utils/jwPlayer";
-import { register } from "$app/utils/serverComponentUtil";
 
 import { TranscodingNoticeModal } from "$app/components/Download/TranscodingNoticeModal";
 import { useRunOnce } from "$app/components/useRunOnce";
@@ -160,5 +158,3 @@ export const VideoStreamPlayer = ({
     </>
   );
 };
-
-export default register({ component: VideoStreamPlayer, propParser: createCast() });
