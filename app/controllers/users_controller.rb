@@ -8,7 +8,8 @@ class UsersController < ApplicationController
 
   after_action :verify_authorized, only: %i[deactivate]
 
-  before_action :hide_layouts, only: %i[show coffee subscribe subscribe_preview unsubscribe_review_reminders subscribe_review_reminders]
+  layout "inertia", only: [:coffee]
+  before_action :hide_layouts, only: %i[show subscribe subscribe_preview unsubscribe_review_reminders subscribe_review_reminders]
   before_action :set_as_modal, only: %i[show]
   before_action :set_frontend_performance_sensitive, only: %i[show]
   before_action :set_user_and_custom_domain_config, only: %i[show coffee subscribe subscribe_preview]
@@ -42,7 +43,15 @@ class UsersController < ApplicationController
     e404 if @product.nil?
 
     @title = @product.name
-    @product_props = ProductPresenter.new(pundit_user:, product: @product, request:).product_props(seller_custom_domain_url:, recommended_by: params[:recommended_by])
+
+    if params[:purchase_email].present?
+      flash.now[:notice] = "Your purchase was successful! We sent a receipt to #{params[:purchase_email]}."
+    end
+
+    product_props = ProductPresenter.new(pundit_user:, product: @product, request:).product_props(seller_custom_domain_url:, recommended_by: params[:recommended_by])
+    creator_profile = ProfilePresenter.new(pundit_user:, seller: @product.user).creator_profile
+
+    render inertia: "Profile/Coffee", props: product_props.merge(creator_profile:)
   end
 
   def subscribe
