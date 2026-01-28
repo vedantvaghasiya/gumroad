@@ -52,5 +52,5 @@ const StreamPage = () => {
   );
 };
 
-StreamPage.disableLayout = true;
+StreamPage.loggedInUserLayout = true;
 export default StreamPage;

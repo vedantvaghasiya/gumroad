@@ -5,6 +5,8 @@ class UrlRedirectsController < ApplicationController
   include ProductsHelper
   include PageMeta::Favicon
 
+  layout "inertia", only: [:stream]
+
   before_action :fetch_url_redirect, except: %i[
     show stream download_subtitle_file read download_archive latest_media_locations download_product_files
     audio_durations
@@ -230,7 +232,7 @@ class UrlRedirectsController < ApplicationController
 
   # Consumption event is created by front-end code
   def stream
-set_meta_tag(title: "Watch")
+    set_meta_tag(title: "Watch")
 
     product_file = @url_redirect.product_file(params[:product_file_id]) || @url_redirect.alive_product_files.find(&:streamable?)
     e404 unless product_file&.streamable?
