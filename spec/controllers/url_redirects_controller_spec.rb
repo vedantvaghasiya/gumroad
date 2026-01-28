@@ -1397,6 +1397,11 @@ describe UrlRedirectsController do
       expect(response).to redirect_to confirm_page_path(id: @url_redirect.token)
     end
 
+    it "sets a flash alert when email is incorrect" do
+      post :confirm, params: { id: @token, email: "incorrect@email.com" }
+      expect(flash[:alert]).to eq("Wrong email. Please try again.")
+    end
+
     it "ignores case" do
       post :confirm, params: { id: @token, email: "abcabc@abc.com" }
       expect(response).to redirect_to(url_redirect_path(@url_redirect.token))
