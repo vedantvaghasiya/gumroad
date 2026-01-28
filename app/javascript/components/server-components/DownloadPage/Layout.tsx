@@ -4,6 +4,7 @@ import * as React from "react";
 import { addPurchaseToLibrary } from "$app/data/account";
 import { deletePurchasedProduct } from "$app/data/library";
 import { signupAndAddPurchaseToLibrary } from "$app/data/open_in_app";
+import { classNames } from "$app/utils/classNames";
 import { asyncVoid } from "$app/utils/promise";
 import { assertResponseError, request } from "$app/utils/request";
 
@@ -79,7 +80,8 @@ export const Layout = ({
   headerActions,
   pageList,
   children,
-}: LayoutProps & { headerActions?: React.ReactNode; pageList?: React.ReactNode; children: React.ReactNode }) => {
+  className,
+}: LayoutProps & { headerActions?: React.ReactNode; pageList?: React.ReactNode; children: React.ReactNode; className?: string }) => {
   const loggedInUser = useLoggedInUser();
   const [isResendingReceipt, setIsResendingReceipt] = React.useState(false);
   const isDesktop = useIsAboveBreakpoint("lg");
@@ -263,7 +265,7 @@ export const Layout = ({
               </>
             }
           >
-            <div className="flex flex-col gap-4">
+            <div className={classNames("flex flex-col gap-4", className)}>
               {children}
               {!isDesktop ? settings : null}
             </div>
