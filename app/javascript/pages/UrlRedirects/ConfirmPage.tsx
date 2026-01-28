@@ -1,8 +1,8 @@
-import * as React from "react";
 import { useForm, usePage } from "@inertiajs/react";
+import * as React from "react";
 
-import { Layout, LayoutProps } from "$app/components/server-components/DownloadPage/Layout";
 import { Button } from "$app/components/Button";
+import { Layout, LayoutProps } from "$app/components/server-components/DownloadPage/Layout";
 import { Placeholder } from "$app/components/ui/Placeholder";
 
 type ConfirmationInfo = {
@@ -49,7 +49,7 @@ function ConfirmPage() {
 }
 
 const EmailConfirmation = ({ confirmation_info }: { confirmation_info: ConfirmationInfo }) => {
-  const { data, setData, post, processing } = useForm({
+  const form = useForm({
     id: confirmation_info.id,
     destination: confirmation_info.destination ?? "",
     display: confirmation_info.display ?? "",
@@ -58,7 +58,7 @@ const EmailConfirmation = ({ confirmation_info }: { confirmation_info: Confirmat
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(Routes.confirm_redirect_path());
+    form.post(Routes.confirm_redirect_path());
   };
 
   return (
@@ -70,15 +70,16 @@ const EmailConfirmation = ({ confirmation_info }: { confirmation_info: Confirmat
           type="text"
           name="email"
           placeholder="Email address"
-          value={data.email}
-          onChange={(e) => setData("email", e.target.value)}
+          value={form.data.email}
+          onChange={(e) => form.setData("email", e.target.value)}
         />
-        <Button type="submit" color="accent" disabled={processing}>
-          {processing ? "Confirming..." : "Confirm email"}
+        <Button type="submit" color="accent" disabled={form.processing}>
+          {form.processing ? "Confirming..." : "Confirm email"}
         </Button>
       </form>
     </Placeholder>
   );
 };
 
+ConfirmPage.disableLayout = true;
 export default ConfirmPage;
