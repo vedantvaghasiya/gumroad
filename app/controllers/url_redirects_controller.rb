@@ -3,7 +3,6 @@
 class UrlRedirectsController < ApplicationController
   include SignedUrlHelper
   include ProductsHelper
-  include InertiaRendering
   include PageMeta::Favicon
 
   layout "inertia", only: [:confirm_page]
