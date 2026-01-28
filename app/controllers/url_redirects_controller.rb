@@ -40,12 +40,6 @@ class UrlRedirectsController < ApplicationController
     end
   end
 
-  module AddToLibraryOption
-    NONE = "none"
-    ADD_TO_LIBRARY_BUTTON = "add_to_library_button"
-    SIGNUP_FORM = "signup_form"
-  end
-
   def show
     trigger_files_lifecycle_events
     redirect_to @url_redirect.redirect_or_s3_location, allow_other_host: true
@@ -78,7 +72,7 @@ class UrlRedirectsController < ApplicationController
     @body_class = "download-page responsive responsive-nav"
     set_favicon_meta_tags(@url_redirect.seller)
     set_meta_tag(title: @url_redirect.with_product_files.name == "Untitled" ? @url_redirect.referenced_link.name : @url_redirect.with_product_files.name)
-    @react_component_props = UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_with_content_props(common_props)
+    @react_component_props = url_redirect_presenter.download_page_with_content_props
     trigger_files_lifecycle_events
   end
 
@@ -154,31 +148,31 @@ class UrlRedirectsController < ApplicationController
   end
 
   def confirm_page
-    @content_unavailability_reason_code = UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required]
     set_meta_tag(title: "#{@url_redirect.referenced_link.name} - Confirm email")
-    extra_props = common_props.merge(
+    extra_props = {
+      content_unavailability_reason_code: UrlRedirectPresenter::CONTENT_UNAVAILABILITY_REASON_CODES[:email_confirmation_required],
       confirmation_info: {
         id: @url_redirect.token,
         destination: params[:destination].presence || (@url_redirect.rich_content_json.present? ? "download_page" : nil),
         display: params[:display],
         email: params[:email],
       },
-    )
-    props = UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_without_content_props(extra_props)
+    }
+    props = url_redirect_presenter.download_page_without_content_props(extra_props)
 
     render inertia: "UrlRedirects/ConfirmPage", props:
   end
 
   def expired
-    render inertia: "UrlRedirects/ExpiredPage", props: unavailable_page_props
+    render inertia: "UrlRedirects/ExpiredPage", props: url_redirect_presenter.unavailable_page_props
   end
 
   def rental_expired_page
-    render inertia: "UrlRedirects/RentalExpiredPage", props: unavailable_page_props
+    render inertia: "UrlRedirects/RentalExpiredPage", props: url_redirect_presenter.unavailable_page_props
   end
 
   def membership_inactive_page
-    render inertia: "UrlRedirects/MembershipInactivePage", props: unavailable_page_props
+    render inertia: "UrlRedirects/MembershipInactivePage", props: url_redirect_presenter.unavailable_page_props
   end
 
   def change_purchaser
@@ -404,30 +398,11 @@ class UrlRedirectsController < ApplicationController
       }
     end
 
-    def unavailable_page_props
-      add_to_library_option = if @url_redirect.purchase && @url_redirect.purchase.purchaser.nil?
-        logged_in_user.present? ? AddToLibraryOption::ADD_TO_LIBRARY_BUTTON : AddToLibraryOption::SIGNUP_FORM
-      else
-        AddToLibraryOption::NONE
-      end
-
-      UrlRedirectPresenter.new(url_redirect: @url_redirect, logged_in_user:).download_page_without_content_props({
-                                                                                                                   is_mobile_app_web_view: params[:display] == "mobile_app",
-                                                                                                                   add_to_library_option:,
-                                                                                                                 })
-    end
-
-    def common_props
-      add_to_library_option = if @url_redirect.purchase && @url_redirect.purchase.purchaser.nil?
-        logged_in_user.present? ? AddToLibraryOption::ADD_TO_LIBRARY_BUTTON : AddToLibraryOption::SIGNUP_FORM
-      else
-        AddToLibraryOption::NONE
-      end
-
-      {
-        is_mobile_app_web_view: params[:display] == "mobile_app",
-        content_unavailability_reason_code: @content_unavailability_reason_code,
-        add_to_library_option:,
-      }
+    def url_redirect_presenter
+      UrlRedirectPresenter.new(
+        url_redirect: @url_redirect,
+        logged_in_user:,
+        is_mobile_app_web_view: params[:display] == "mobile_app"
+      )
     end
 end
