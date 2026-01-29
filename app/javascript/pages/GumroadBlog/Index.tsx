@@ -1,14 +1,17 @@
+import { Link, usePage } from "@inertiajs/react";
 import cx from "classnames";
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createCast } from "ts-safe-cast";
+import { cast } from "ts-safe-cast";
 
-import { register } from "$app/utils/serverComponentUtil";
+import { LoggedInUserLayout } from "$app/inertia/layout";
 
+import { HomeFooter } from "$app/components/HomeFooter";
+import { HomeNav } from "$app/components/HomeNav";
 import { formatPostDate } from "$app/components/server-components/Profile/PostPage";
 import { Tabs, Tab } from "$app/components/ui/Tabs";
 
-import placeholderFeatureImage from "../../../../assets/images/blog/post-placeholder.jpg";
+import placeholderFeatureImage from "$assets/images/blog/post-placeholder.jpg";
 
 interface TagProps {
   name: string;
@@ -43,11 +46,14 @@ interface Post {
   tags: string[];
 }
 
-interface IndexPageProps {
+interface Props {
   posts: Post[];
 }
 
-const useDynamicClamp = (containerRef: React.RefObject<HTMLElement>, textRef: React.RefObject<HTMLElement>) => {
+const useDynamicClamp = (
+  containerRef: React.RefObject<HTMLElement | null>,
+  textRef: React.RefObject<HTMLElement | null>,
+) => {
   const [clamp, setClamp] = useState<number | undefined>(undefined);
   const lineHeightRef = useRef<number | undefined>(undefined);
 
@@ -91,7 +97,7 @@ const PostCard = ({
 
   return (
     <article className="h-full">
-      <a
+      <Link
         href={post.url}
         className={cx(
           "override grid h-full overflow-hidden rounded-lg border border-black bg-white text-black no-underline transition-all duration-200 ease-in-out hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[3px_3px_#000]",
@@ -133,14 +139,14 @@ const PostCard = ({
             </div>
           )}
         </div>
-      </a>
+      </Link>
     </article>
   );
 };
 
 const CompactPostItem = ({ post }: { post: Post }) => (
   <li className="border-gray-300 py-4 first:pt-0">
-    <a href={post.url} className="group flex items-end justify-between text-black no-underline hover:text-pink-600">
+    <Link href={post.url} className="group flex items-end justify-between text-black no-underline hover:text-pink-600">
       <div className="grid grid-cols-1 gap-1">
         <h4 className="mb-0.5 text-2xl font-normal">{post.subject}</h4>
         <p className="pb-0.5 text-base text-gray-500">{formatPostDate(post.published_at, "en-US")}</p>
@@ -150,7 +156,7 @@ const CompactPostItem = ({ post }: { post: Post }) => (
           <path d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </div>
-    </a>
+    </Link>
   </li>
 );
 
@@ -231,7 +237,8 @@ const TagSelector = ({
   );
 };
 
-const IndexPage = ({ posts = [] }: IndexPageProps) => {
+function GumroadBlogIndex() {
+  const { posts = [] } = cast<Props>(usePage().props);
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const featured_post = posts[0];
@@ -253,37 +260,45 @@ const IndexPage = ({ posts = [] }: IndexPageProps) => {
   const postsForGrid = useMemo(() => (activeTab ? postsByTags[activeTab] : posts.slice(1)), [activeTab, postsByTags]);
 
   return (
-    <div className="scoped-tailwind-preflight">
-      <div className="container mx-auto px-8 py-24 sm:px-6 lg:px-8">
-        <header className="mb-8">
-          <h1 className="text-6xl text-black">Blog</h1>
-        </header>
-        <TagSelector
-          postsByTags={postsByTags}
-          allPostsCount={posts.length}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
+    <div className="flex min-h-screen flex-col bg-white font-['ABC_Favorit'] text-base leading-relaxed font-normal tracking-tight text-black">
+      <HomeNav />
+      <div className="flex-1">
+        <div className="scoped-tailwind-preflight">
+          <div className="container mx-auto px-8 py-24 sm:px-6 lg:px-8">
+            <header className="mb-8">
+              <h1 className="text-6xl text-black">Blog</h1>
+            </header>
+            <TagSelector
+              postsByTags={postsByTags}
+              allPostsCount={posts.length}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
 
-        {activeTab ? null : (
-          <div className="mb-8 flex flex-row items-start lg:gap-7.5">
-            <section className="mb-0 w-full lg:mb-0 lg:w-[calc(67%-0.9375rem)]">
-              {featured_post ? (
-                <PostCard post={featured_post} title_size_class="text-2xl md:text-4xl" usePlaceholder />
-              ) : (
-                <p className="flex min-h-[300px] items-center justify-center rounded-sm border-2 border-dashed border-gray-300 p-8 text-center text-gray-600">
-                  No featured post available.
-                </p>
-              )}
-            </section>
-            <CompactPostSection product_updates={product_updates} />
+            {activeTab ? null : (
+              <div className="mb-8 flex flex-row items-start lg:gap-7.5">
+                <section className="mb-0 w-full lg:mb-0 lg:w-[calc(67%-0.9375rem)]">
+                  {featured_post ? (
+                    <PostCard post={featured_post} title_size_class="text-2xl md:text-4xl" usePlaceholder />
+                  ) : (
+                    <p className="flex min-h-[300px] items-center justify-center rounded-sm border-2 border-dashed border-gray-300 p-8 text-center text-gray-600">
+                      No featured post available.
+                    </p>
+                  )}
+                </section>
+                <CompactPostSection product_updates={product_updates} />
+              </div>
+            )}
+
+            {postsForGrid ? <PostsGrid posts={postsForGrid} /> : null}
           </div>
-        )}
-
-        {postsForGrid ? <PostsGrid posts={postsForGrid} /> : null}
+        </div>
       </div>
+      <HomeFooter />
     </div>
   );
-};
+}
 
-export default register({ component: IndexPage, propParser: createCast() });
+GumroadBlogIndex.layout = (page: React.ReactNode) => <LoggedInUserLayout>{page}</LoggedInUserLayout>;
+
+export default GumroadBlogIndex;
